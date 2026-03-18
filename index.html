@@ -20,17 +20,16 @@
         body {
             margin: 0;
             font-family: "Segoe UI Semilight", "Segoe UI", Tahoma, sans-serif;
-            /* Установка фонового изображения */
             background: url('background.png') no-repeat center center fixed;
             background-size: cover;
             color: white;
             overflow-x: hidden;
+            background-color: #004d60; 
         }
 
         header {
-            padding: 60px 60px 20px 60px;
-            /* Легкое затемнение, чтобы текст заголовка всегда читался */
-            background: rgba(0, 0, 0, 0.15);
+            padding: 80px 60px 20px 60px;
+            background: transparent; 
         }
 
         h1 { 
@@ -39,11 +38,11 @@
             margin: 0;
             letter-spacing: -1px;
             text-transform: lowercase;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 2px 8px rgba(0,0,0,0.4);
         }
 
         .container {
-            padding: 40px 60px 60px 60px;
+            padding: 20px 60px 60px 60px;
         }
 
         .grid {
@@ -53,7 +52,32 @@
             gap: 10px;
         }
 
-        /* КНОПКА В СТИЛЕ WINDOWS 8.1 */
+        .tile.wide {
+            grid-column: span 2;
+        }
+
+        /* ЦВЕТ ЧАСОВ ИЗМЕНЕН НА ФИОЛЕТОВЫЙ */
+        .clock-tile {
+            background: var(--win-purple);
+            justify-content: center;
+            align-items: flex-start;
+            padding-left: 35px !important;
+        }
+
+        #clock-time {
+            font-size: 86px;
+            font-weight: 100;
+            margin: 0;
+            line-height: 0.9;
+        }
+
+        #clock-date {
+            font-size: 20px;
+            margin: 10px 0 0 5px;
+            text-transform: lowercase;
+            opacity: 0.9;
+        }
+
         .win8-button {
             display: inline-block;
             background: transparent;
@@ -80,7 +104,6 @@
             transform: scale(0.95);
         }
 
-        /* TILE LOGIC */
         .tile {
             perspective: 1000px;
             cursor: pointer;
@@ -106,7 +129,7 @@
             backface-visibility: hidden;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
         .tile-front h3 {
@@ -130,7 +153,6 @@
             overflow: hidden;
         }
 
-        /* COLORS */
         .c1{background:var(--win-blue);}
         .c2{background:var(--win-teal);}
         .c3{background:var(--win-purple);}
@@ -139,7 +161,6 @@
         .c6{background:var(--win-red);}
         .c7{background:var(--win-pink);}
 
-        /* FULLSCREEN MODAL */
         .modal {
             position: fixed;
             inset: 0;
@@ -157,7 +178,6 @@
 
         .modal-content h2 { font-size: 42px; font-weight: 300; margin-bottom: 30px; }
 
-        /* КНОПКА НАЗАД */
         .close-back-btn {
             position: fixed;
             top: 40px;
@@ -182,20 +202,11 @@
             border-bottom: 2px solid #ffffff;
             transform: rotate(45deg);
             margin-left: 4px;
-            transition: border-color 0.1s ease;
         }
 
         .close-back-btn:hover {
             border-color: var(--win-blue);
-            background-color: rgba(255,255,255, 0.05);
-        }
-
-        .close-back-btn:hover::after {
-            border-color: var(--win-blue);
-        }
-
-        .close-back-btn:active {
-            transform: scale(0.95);
+            background-color: rgba(255,255,255, 0.1);
         }
     </style>
 </head>
@@ -221,11 +232,40 @@
     const modalContent = document.getElementById("modalContent");
     const colors = ["c1","c2","c3","c4","c5","c6","c7"];
 
+    function updateClock() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        const dateStr = now.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
+        
+        const timeEl = document.getElementById('clock-time');
+        const dateEl = document.getElementById('clock-date');
+        
+        if (timeEl) timeEl.textContent = timeStr;
+        if (dateEl) dateEl.textContent = dateStr;
+    }
+
+    function createClockTile() {
+        const clockTile = document.createElement("div");
+        clockTile.className = "tile wide";
+        clockTile.innerHTML = `
+            <div class="tile-inner">
+                <div class="tile-front clock-tile">
+                    <p id="clock-time">00:00</p>
+                    <p id="clock-date">загрузка...</p>
+                </div>
+            </div>
+        `;
+        grid.appendChild(clockTile);
+        setInterval(updateClock, 1000);
+        updateClock();
+    }
+
     async function loadNews() {
+        createClockTile();
         try {
             const res = await fetch(API);
             const data = await res.json();
-            data.items.slice(0, 16).forEach((item, i) => createTile(item, i));
+            data.items.slice(0, 14).forEach((item, i) => createTile(item, i));
         } catch (e) { console.error(e); }
     }
 

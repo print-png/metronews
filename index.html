@@ -14,7 +14,7 @@
             --win-red: #b91d47;
             --win-teal: #00aba9;
             --win-pink: #ff0097;
-            --win-bg: #603cba; /* Стандартный фон — фиолетовый */
+            --win-bg: #603cba;
             --tile-size: 260px;
             --gap: 10px;
         }
@@ -80,13 +80,13 @@
         .tile-back { transform: rotateY(180deg); background: #2b2b2b; border: 1px solid #444; }
         .tile-back p { font-size: 13px; line-height: 1.4; margin: 10px 0; flex-grow: 1; overflow: hidden; }
 
-        /* ЧАСЫ: Теперь фиолетовые */
+        /* ЧАСЫ */
         .clock-tile { 
             background: var(--win-purple); 
             justify-content: center; 
             align-items: flex-start; 
             padding-left: 35px !important;
-            border: 1px solid rgba(255,255,255,0.1); /* Легкая рамка, чтобы не сливаться с фоном */
+            border: 1px solid rgba(255,255,255,0.1);
         }
         #clock-time { font-size: 86px; font-weight: 100; margin: 0; line-height: 0.9; }
         #clock-date { font-size: 20px; margin: 10px 0 0 5px; text-transform: lowercase; opacity: 0.9; }
@@ -103,9 +103,40 @@
         .currency-value { font-size: 48px; font-weight: 100; margin: 5px 0; }
         .currency-up { color: #afff00; font-size: 14px; }
         
-        .settings-tile { background: #4b4b4b; display: flex; align-items: center; justify-content: center; }
-        .settings-tile .icon { font-size: 70px; margin-bottom: 10px; }
-        .settings-tile .label { position: absolute; bottom: 15px; left: 20px; font-size: 14px; text-transform: lowercase; }
+        /* ПАРАМЕТРЫ С БОЛЬШОЙ ИКОНКОЙ ПО ЦЕНТРУ */
+        .settings-tile { 
+            background: #4b4b4b; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            position: relative;
+            overflow: hidden;
+        }
+        .settings-tile .icon { 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+        .settings-tile img { 
+            width: 140px; /* Увеличил размер */
+            height: 140px; 
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+        .tile:hover .settings-tile img {
+            transform: scale(1.05); /* Легкий эффект при наведении */
+        }
+        .settings-tile .label { 
+            position: absolute; 
+            bottom: 15px; 
+            left: 20px; 
+            font-size: 14px; 
+            text-transform: lowercase; 
+            opacity: 0.8;
+            pointer-events: none;
+        }
 
         .win8-button {
             display: inline-block;
@@ -227,7 +258,9 @@
         tile.innerHTML = `
             <div class="tile-inner" onclick="toggleSettings()">
                 <div class="tile-front settings-tile">
-                    <div class="icon">⚙</div>
+                    <div class="icon">
+                        <img src="sethings.png" alt="⚙">
+                    </div>
                     <div class="label">параметры</div>
                 </div>
             </div>`;

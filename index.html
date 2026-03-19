@@ -14,6 +14,8 @@
             --win-red: #b91d47;
             --win-teal: #00aba9;
             --win-pink: #ff0097;
+            --tile-size: 260px;
+            --gap: 10px;
         }
 
         * { box-sizing: border-box; }
@@ -24,8 +26,9 @@
             background: url('background.png') no-repeat center center fixed;
             background-size: cover;
             color: white;
-            overflow-x: hidden;
             background-color: #004d60; 
+            overflow: hidden; /* Скрываем общий скролл страницы */
+            height: 100vh;
         }
 
         header {
@@ -42,18 +45,36 @@
             text-shadow: 0 2px 8px rgba(0,0,0,0.4);
         }
 
+        /* КОНТЕЙНЕР С ГОРИЗОНТАЛЬНЫМ СКРОЛЛОМ */
         .container {
             padding: 20px 60px 60px 60px;
+            overflow-x: auto; /* Включаем скролл вправо */
+            overflow-y: hidden;
+            height: calc(100vh - 180px);
+            display: flex;
+            align-items: flex-start;
         }
 
+        /* СЕТКА, РАСТУЩАЯ В КОЛОНКИ */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, 260px);
-            grid-auto-rows: 260px;
-            gap: 10px;
+            grid-auto-flow: column; /* Плитки идут вправо */
+            grid-template-rows: repeat(2, var(--tile-size)); /* 2 ряда плиток */
+            grid-auto-columns: min-content;
+            gap: var(--gap);
+            height: calc(2 * var(--tile-size) + var(--gap));
+        }
+
+        /* БАЗОВЫЙ РАЗМЕР ПЛИТКИ */
+        .tile { 
+            perspective: 1000px; 
+            cursor: pointer; 
+            width: var(--tile-size);
+            height: var(--tile-size);
         }
 
         .tile.wide {
+            width: calc(2 * var(--tile-size) + var(--gap));
             grid-column: span 2;
         }
 
@@ -102,7 +123,6 @@
         .win8-button:hover { background-color: #ffffff; color: #1d1d1d; }
         .win8-button:active { transform: scale(0.95); }
 
-        .tile { perspective: 1000px; cursor: pointer; }
         .tile-inner {
             position: relative;
             width: 100%;
@@ -136,6 +156,12 @@
         .c6{background:var(--win-red);}
         .c7{background:var(--win-pink);}
 
+        /* СТИЛЬ СКРОЛЛБАРА */
+        .container::-webkit-scrollbar { height: 10px; }
+        .container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        .container::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+
+        /* МОДАЛКА */
         .modal {
             position: fixed;
             inset: 0;
@@ -180,7 +206,7 @@
     <h1>новости</h1>
 </header>
 
-<div class="container">
+<div class="container" id="scrollContainer">
     <div class="grid" id="grid"></div>
 </div>
 
@@ -203,8 +229,10 @@
         const now = new Date();
         const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
         const dateStr = now.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
-        document.getElementById('clock-time').textContent = timeStr;
-        document.getElementById('clock-date').textContent = dateStr;
+        if(document.getElementById('clock-time')) {
+            document.getElementById('clock-time').textContent = timeStr;
+            document.getElementById('clock-date').textContent = dateStr;
+        }
     }
 
     function createClockTile() {
@@ -249,11 +277,11 @@
 
     async function loadNews() {
         createClockTile();
-        await createFinanceTile(); // Добавляем валюты после часов
+        await createFinanceTile();
         try {
             const res = await fetch(API_NEWS);
             const data = await res.json();
-            data.items.slice(0, 12).forEach((item, i) => createTile(item, i));
+            data.items.slice(0, 16).forEach((item, i) => createTile(item, i));
         } catch (e) { console.error(e); }
     }
 
@@ -285,15 +313,22 @@
 
     function closeModal() { modal.style.display = "none"; document.body.style.overflow = "auto"; }
 
+    // Горизонтальный скролл колесиком мыши
+    const scrollContainer = document.getElementById('scrollContainer');
+    scrollContainer.addEventListener('wheel', (evt) => {
+        evt.preventDefault();
+        scrollContainer.scrollLeft += evt.deltaY;
+    });
+
     loadNews();
-    // Добавь это в конец скрипта, чтобы валюты обновлялись каждые 10 минут без перезагрузки
-setInterval(async () => {
-    try {
-        const resUsd = await fetch(API_CURRENCY + '?nocache=' + Math.random());
-        const dataUsd = await resUsd.json();
-        document.getElementById('usd-val').textContent = dataUsd.usd.rub.toFixed(2);
-    } catch (e) { console.error("Обновление не удалось"); }
-}, 600000);
+
+    setInterval(async () => {
+        try {
+            const resUsd = await fetch(API_CURRENCY + '?nocache=' + Math.random());
+            const dataUsd = await resUsd.json();
+            document.getElementById('usd-val').textContent = dataUsd.usd.rub.toFixed(2);
+        } catch (e) { console.error("Обновление не удалось"); }
+    }, 600000);
 </script>
 </body>
 </html>
